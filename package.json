@@ -1,19 +1,33 @@
 {
   "name": "notionctl",
-  "version": "0.1.0",
-  "description": "Conservative GitOps for Notion databases and data sources.",
+  "version": "0.2.0",
+  "description": "Safe GitOps and infrastructure-as-code for Notion databases and data sources.",
   "type": "module",
   "bin": {
     "notionctl": "./dist/cli.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RajvardhanPatil07/notion-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RajvardhanPatil07/notion-cli/issues"
+  },
+  "homepage": "https://github.com/RajvardhanPatil07/notion-cli",
+  "keywords": ["notion", "notion-api", "cli", "gitops", "infrastructure-as-code", "developer-tools", "typescript"],
+  "license": "MIT",
   "scripts": {
     "build": "tsup src/cli.ts --format esm --dts --clean --sourcemap --target node20",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "prepublishOnly": "pnpm check"
   },
   "engines": {
     "node": ">=20.11"
