@@ -11,6 +11,13 @@ export interface NotionProvider {
   listDataSourceTemplates(dataSourceId: string): Promise<Record<string, unknown>[]>;
 }
 
+type DataSourcesApi = {
+  retrieve(input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  create(input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  update(input: Record<string, unknown>): Promise<Record<string, unknown>>;
+  listTemplates(input: Record<string, unknown>): Promise<{ templates?: Record<string, unknown>[]; has_more?: boolean; next_cursor?: string | null }>;
+};
+
 const MAX_RETRIES = 4;
 const BASE_DELAY_MS = 300;
 
@@ -57,13 +64,8 @@ export class HttpNotionProvider implements NotionProvider {
     return templates;
   }
 
-  private dataSources(): {
-    retrieve(input: Record<string, unknown>): Promise<Record<string, unknown>>;
-    create(input: Record<string, unknown>): Promise<Record<string, unknown>>;
-    update(input: Record<string, unknown>): Promise<Record<string, unknown>>;
-    listTemplates(input: Record<string, unknown>): Promise<{ templates?: Record<string, unknown>[]; has_more?: boolean; next_cursor?: string | null }>;
-  } {
-    return (this.client as unknown as { dataSources: ReturnType<HttpNotionProvider["dataSources"]> }).dataSources;
+  private dataSources(): DataSourcesApi {
+    return (this.client as unknown as { dataSources: DataSourcesApi }).dataSources;
   }
 }
 
