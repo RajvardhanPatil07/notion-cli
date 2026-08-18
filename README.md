@@ -26,6 +26,8 @@ Destructive property deletes and type changes are blocked by default.
 - Migration scaffolding for schema evolution
 - Lock/state tracking for stable Notion IDs
 - Notion API version pinning
+- Retry/backoff for transient API failures
+- Environment-specific token selection
 - Node.js 20+ and TypeScript
 - Unit-tested diff/config/manifest layers
 - GitHub Actions CI and npm-ready packaging
@@ -51,6 +53,13 @@ Create a Notion integration and share the target database with it, then export t
 
 ```bash
 export NOTION_TOKEN=secret_...
+```
+
+For separate environments, set `NOTIONCTL_ENV` and a matching token variable. For example:
+
+```bash
+export NOTIONCTL_ENV=staging
+export NOTION_TOKEN_STAGING=secret_...
 ```
 
 `.env` is supported for local development and is ignored by Git. Never commit tokens.
@@ -105,11 +114,18 @@ notionctl apply --yes --allow-delete-properties
 notionctl apply --yes --allow-type-change
 ```
 
-Do not enable destructive flags casually. Review the plan first.
+Plans have a deterministic ID. You can pin an apply to a previously reviewed plan:
+
+```bash
+notionctl plan --json
+notionctl apply --yes --plan <plan-id>
+```
+
+If live Notion state changed, the plan ID changes and the apply is rejected.
 
 ## GitHub Actions
 
-A minimal CI workflow is included under `.github/workflows/ci.yml`. For deployment, provide `NOTION_TOKEN` as a GitHub Actions secret and run `notionctl validate`/`notionctl plan` in pull requests. Keep `apply` in a protected deployment workflow with an explicit environment approval.
+A CI workflow is included under `.github/workflows/ci.yml`. For deployment, provide `NOTION_TOKEN` as a GitHub Actions secret and run `notionctl validate`/`notionctl plan` in pull requests. Keep `apply` in a protected deployment workflow with an explicit environment approval.
 
 ## Repository layout
 
@@ -118,7 +134,7 @@ src/
   commands.ts     CLI and command orchestration
   diff.ts         desired-vs-live reconciliation planner
   apply.ts        safe mutation executor
-  notion.ts       Notion API adapter
+  notion.ts       resilient Notion API adapter
   remote.ts       live-state retrieval
   manifest.ts     YAML manifest IO
   schemas.ts      Zod schemas and domain types
@@ -140,7 +156,7 @@ pnpm build
 
 ## Roadmap
 
-- Environment-specific workspaces and deployment approvals
+- Environment-specific workspace/resource overlays
 - First-class migration apply/rollback semantics
 - GitHub PR plan comments
 - More Notion resource types
